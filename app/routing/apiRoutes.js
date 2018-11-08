@@ -1,47 +1,60 @@
 const friends = require('./../data/friends');
+const mysql = require("mysql");
 
-module.exports = function(app){
+
+//create mySQL connection information
+if (process.env.NODE_ENV === 'production') {
+    const connection = mysql.createConnection(process.env.JAWSDB_URL);
+    // connect to the mysql server and sql database
+    connection.connect(function (err) {
+        if (err) throw err;
+        console.log("connected");
+    });
+}
+else {
+    const connection = mysql.createConnection({
+        host: "localhost",
+        port: 3306,
+        user: "root",
+        password: "",
+        database: "friends_db"
+    });
+    // connect to the mysql server and sql database
+    connection.connect(function (err) {
+        if (err) throw err;
+        console.log("connected");
+    });
+}
+
+
+
+module.exports = function (app) {
     // Displays all friends
-    app.get("/api/friends", function(req, res) {
+    app.get("/api/friends", function (req, res) {
         return res.json(friends);
     });
-    
-    // Displays a single character, or returns false
-    // app.get("/api/characters/:character", function(req, res) {
-    //     const chosen = req.params.character;
-    
-    //     console.log(chosen);
-    
-    //     for (let i = 0; i < characters.length; i++) {
-    //     if (chosen === characters[i].routeName) {
-    //         return res.json(characters[i]);
-    //     }
-    //     }
-    
-    //     return res.json(false);
-    // });
-    
-    // Create New Characters - takes in JSON input
-    app.post("/api/friends", function(req, res) {
+
+    // Create New Friend - takes in JSON input
+    app.post("/api/friends", function (req, res) {
+
         // req.body hosts is equal to the JSON post sent from the user
-        // This works because of our body parsing middleware
-       const newFriend = req.body;
-    
-        console.log(newFriend);
-    
+        const newFriend = req.body;
+
+        //search for the perfect match before adding the new friend
         let match = 40;
         let perfectMatch;
-        friends.forEach(person=>{
+        friends.forEach(person => {
             let difference = 0;
-            for(let i =0;i<person.scores.length;i++){
-                difference += Math.abs(parseInt(person.scores[i])-newFriend.scores[i]);
+            for (let i = 0; i < person.scores.length; i++) {
+                difference += Math.abs(parseInt(person.scores[i]) - newFriend.scores[i]);
             }
-            if(difference<match){
+            if (difference < match) {
                 match = difference;
-                perfectMatch = {name: person.name, photo: person.photo};
-                
+                perfectMatch = { name: person.name, photo: person.photo };
+
             }
         });
+
         friends.push(newFriend);
         //return the match name and photo
         return res.json(perfectMatch);
