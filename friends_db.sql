@@ -23,7 +23,7 @@ create table scores(
 );
 
 insert into people(name, photo)
-values ("name","photoHTMLFIRST"),
+values ("name","https://via.placeholder.com/150"),
 		("name2","photo2");
 insert into scores(q1,q2,q3,q4,q5,q6,q7,q8,q9,q10)
 values		(1,2,3,4,5,1,2,3,4,5),
