@@ -28,8 +28,7 @@ else {
 module.exports = function (app) {
     // Displays all friends
     app.get("/api/friends", function (req, res) {
-        connection.query(`SELECT people.name, people.photo, scores.q1, scores.q2,scores.q3,scores.q4,scores.q5,
-        scores.q6,scores.q7,scores.q8,scores.q9,scores.q10 FROM people INNER JOIN scores WHERE people.id = scores.id`,
+        connection.query(`SELECT people.name, people.photo, people.scores FROM people`,
             function (err, response) {
                 if (err) throw err;
                 const result = [];
@@ -37,10 +36,7 @@ module.exports = function (app) {
                     const person = {};
                     person.name = response[j].name;
                     person.photo = response[j].photo;
-                    person.scores = [];
-                    for (let i = 1; i < 11; i++) {
-                        person.scores.push(response[j]["q" + i]);
-                    }
+                    person.scores = response[j].scores.split(",");
                     result.push(person);
                 };
                 return res.json(result);
@@ -56,14 +52,13 @@ module.exports = function (app) {
         //search for the perfect match before adding the new friend
         let match = 40;
         let perfectMatch;
-        connection.query(`SELECT people.name, people.photo, scores.q1, scores.q2,scores.q3,scores.q4,scores.q5,
-        scores.q6,scores.q7,scores.q8,scores.q9,scores.q10 FROM people INNER JOIN scores WHERE people.id = scores.id`,
+        connection.query(`SELECT people.name, people.photo, people.scores FROM people`,
             function (err, response) {
                 if (err) throw err;
                 response.forEach(person => {
                     let difference = 0;
                     for (let i = 0; i < 10; i++) {
-                        difference += Math.abs(parseInt(person["q" + (i+1)]) - parseInt(newFriend.scores[i]));
+                        difference += Math.abs(parseInt(person.scores.split(",")[i]) - parseInt(newFriend.scores[i]));
                     }
                     if (difference < match) {
                         match = difference;
@@ -78,20 +73,7 @@ module.exports = function (app) {
         connection.query("INSERT INTO people SET ?", {
             name: newFriend.name,
             photo: newFriend.photo,
-        }, function (err, res) {
-            if (err) throw err;
-        });
-        connection.query("INSERT INTO scores SET ?", {
-            q1: newFriend.scores[0],
-            q2: newFriend.scores[1],
-            q3: newFriend.scores[2],
-            q4: newFriend.scores[3],
-            q5: newFriend.scores[4],
-            q6: newFriend.scores[5],
-            q7: newFriend.scores[6],
-            q8: newFriend.scores[7],
-            q9: newFriend.scores[8],
-            q10: newFriend.scores[9],
+            scores: newFriend.scores.join(","),
         }, function (err, res) {
             if (err) throw err;
         });
